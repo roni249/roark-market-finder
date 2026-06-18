@@ -1,0 +1,22 @@
+Item,Value
+Date generated,2026-06-18T18:29:15Z
+Report month,2026-06
+County CSV URL,https://econdata.s3-us-west-2.amazonaws.com/Reports/Core/RDC_Inventory_Core_Metrics_County_History.csv
+ZIP CSV URL,https://econdata.s3-us-west-2.amazonaws.com/Reports/Core/RDC_Inventory_Core_Metrics_Zip_History.csv
+Target states used,"FL,MI,GA,AL"
+County rows removed by quality flag,0
+ZIP rows removed by quality flag,0
+Number of counties analyzed,364
+Number of ZIPs analyzed,2073
+Number of ZIPs excluded due to cooldown,0
+Number of ZIPs assigned to List A,405
+Number of ZIPs assigned to List B,395
+Scoring formula explanation,"County: pending ratio 30%, active inventory 20%, price decrease 15%, DOM 15%, affordability 10%, volume 10%. ZIP: pending ratio 25%, active inventory 20%, volume 15%, price fit 15%, price decrease 10%, DOM 10%, data quality 5%."
+List A estimated lead volume - AL,8290.0
+List B estimated lead volume - AL,8269.0
+List A estimated lead volume - FL,24292.0
+List B estimated lead volume - FL,24261.0
+List A estimated lead volume - GA,17394.0
+List B estimated lead volume - GA,17438.0
+List A estimated lead volume - MI,5658.0
+List B estimated lead volume - MI,5661.0

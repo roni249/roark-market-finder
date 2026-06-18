@@ -1,0 +1,69 @@
+name: Monthly Market Finder
+
+on:
+  schedule:
+    - cron: "0 10 5 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: monthly-market-finder
+  cancel-in-progress: false
+
+jobs:
+  monthly-market-finder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run monthly report
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          REALTOR_COUNTY_CSV_URL: ${{ secrets.REALTOR_COUNTY_CSV_URL }}
+          REALTOR_ZIP_CSV_URL: ${{ secrets.REALTOR_ZIP_CSV_URL }}
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          TARGET_STATES: ${{ secrets.TARGET_STATES }}
+          EMAIL_PROVIDER: smtp
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
+          COLD_CALLER_A_EMAIL: ${{ secrets.COLD_CALLER_A_EMAIL }}
+          COLD_CALLER_B_EMAIL: ${{ secrets.COLD_CALLER_B_EMAIL }}
+          COLD_CALLER_A_NAME: ${{ secrets.COLD_CALLER_A_NAME }}
+          COLD_CALLER_B_NAME: ${{ secrets.COLD_CALLER_B_NAME }}
+          ZIP_COOLDOWN_MONTHS: ${{ secrets.ZIP_COOLDOWN_MONTHS }}
+          ALLOW_COOLDOWN_OVERRIDE: ${{ secrets.ALLOW_COOLDOWN_OVERRIDE }}
+          TOP_COUNTIES_PER_STATE: ${{ secrets.TOP_COUNTIES_PER_STATE }}
+          TOP_ZIPS_PER_COUNTY: ${{ secrets.TOP_ZIPS_PER_COUNTY }}
+          MIN_ACTIVE_LISTING_COUNT: ${{ secrets.MIN_ACTIVE_LISTING_COUNT }}
+          MIN_PENDING_LISTING_COUNT: ${{ secrets.MIN_PENDING_LISTING_COUNT }}
+        run: python app/jobs/monthly_run.py
+
+      - name: Commit monthly outputs and ZIP history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/history/zip_usage_history.csv data/processed/
+          if git diff --cached --quiet; then
+            echo "No monthly output changes to commit."
+          else
+            git commit -m "Add monthly market finder outputs"
+            git push
+          fi
