@@ -12,6 +12,7 @@ PROCESSED_DIR = DATA_DIR / "processed"
 EXPORTS_DIR = PROCESSED_DIR / "exports"
 HISTORY_DIR = DATA_DIR / "history"
 ZIP_HISTORY_PATH = HISTORY_DIR / "zip_usage_history.csv"
+MAJOR_CITY_FILTER_PATH = DATA_DIR / "config" / "major_city_market_filter.csv"
 
 
 def load_local_env() -> None:
@@ -75,6 +76,10 @@ class Settings:
     top_zips_per_county: int
     min_active_listing_count: int
     min_pending_listing_count: int
+    major_city_filter_enabled: bool
+    major_city_filter_path: Path
+    major_city_drive_minutes: int
+    target_zips_per_state: int
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -106,11 +111,15 @@ class Settings:
             top_zips_per_county=_int("TOP_ZIPS_PER_COUNTY", 10),
             min_active_listing_count=_int("MIN_ACTIVE_LISTING_COUNT", 10),
             min_pending_listing_count=_int("MIN_PENDING_LISTING_COUNT", 3),
+            major_city_filter_enabled=_bool(os.getenv("MAJOR_CITY_FILTER_ENABLED"), True),
+            major_city_filter_path=Path(os.getenv("MAJOR_CITY_FILTER_PATH", str(MAJOR_CITY_FILTER_PATH))),
+            major_city_drive_minutes=_int("MAJOR_CITY_DRIVE_MINUTES", 45),
+            target_zips_per_state=_int("TARGET_ZIPS_PER_STATE", 200),
         )
 
 
 def ensure_directories() -> None:
-    for path in (RAW_DIR, PROCESSED_DIR, EXPORTS_DIR, HISTORY_DIR):
+    for path in (RAW_DIR, PROCESSED_DIR, EXPORTS_DIR, HISTORY_DIR, MAJOR_CITY_FILTER_PATH.parent):
         path.mkdir(parents=True, exist_ok=True)
 
 

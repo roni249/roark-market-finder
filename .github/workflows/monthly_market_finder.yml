@@ -54,6 +54,9 @@ jobs:
           TOP_ZIPS_PER_COUNTY: ${{ secrets.TOP_ZIPS_PER_COUNTY }}
           MIN_ACTIVE_LISTING_COUNT: ${{ secrets.MIN_ACTIVE_LISTING_COUNT }}
           MIN_PENDING_LISTING_COUNT: ${{ secrets.MIN_PENDING_LISTING_COUNT }}
+          MAJOR_CITY_FILTER_ENABLED: ${{ secrets.MAJOR_CITY_FILTER_ENABLED }}
+          MAJOR_CITY_DRIVE_MINUTES: ${{ secrets.MAJOR_CITY_DRIVE_MINUTES }}
+          TARGET_ZIPS_PER_STATE: ${{ secrets.TARGET_ZIPS_PER_STATE }}
         run: python app/jobs/monthly_run.py
 
       - name: Commit monthly outputs and ZIP history

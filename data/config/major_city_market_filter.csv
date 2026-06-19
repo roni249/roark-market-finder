@@ -1,0 +1,81 @@
+state,major_city,county,zip_prefix,approx_drive_minutes
+FL,Miami,Miami-Dade,330,45
+FL,Miami,Miami-Dade,331,45
+FL,Miami,Miami-Dade,332,45
+FL,Fort Lauderdale,Broward,333,45
+FL,West Palm Beach,Palm Beach,334,45
+FL,Orlando,Orange,327,45
+FL,Orlando,Seminole,328,45
+FL,Orlando,Osceola,347,45
+FL,Orlando,Lake,347,45
+FL,Tampa,Hillsborough,335,45
+FL,Tampa,Hillsborough,336,45
+FL,Tampa,Pinellas,337,45
+FL,Tampa,Pasco,346,45
+FL,Jacksonville,Duval,320,45
+FL,Jacksonville,Duval,322,45
+FL,Jacksonville,Clay,320,45
+FL,Jacksonville,St. Johns,320,45
+FL,Jacksonville,Nassau,320,45
+FL,Sarasota,Sarasota,342,45
+FL,Sarasota,Manatee,342,45
+FL,Fort Myers,Lee,339,45
+MI,Detroit,Wayne,481,45
+MI,Detroit,Wayne,482,45
+MI,Detroit,Oakland,480,45
+MI,Detroit,Oakland,483,45
+MI,Detroit,Macomb,480,45
+MI,Ann Arbor,Washtenaw,481,45
+MI,Ann Arbor,Livingston,481,45
+MI,Grand Rapids,Kent,493,45
+MI,Grand Rapids,Kent,495,45
+MI,Grand Rapids,Ottawa,494,45
+MI,Grand Rapids,Allegan,490,45
+MI,Lansing,Ingham,488,45
+MI,Lansing,Ingham,489,45
+MI,Lansing,Eaton,488,45
+MI,Lansing,Clinton,488,45
+MI,Flint,Genesee,484,45
+MI,Flint,Genesee,485,45
+MI,Kalamazoo,Kalamazoo,490,45
+MI,Kalamazoo,Calhoun,490,45
+GA,Atlanta,Fulton,300,45
+GA,Atlanta,Fulton,303,45
+GA,Atlanta,DeKalb,300,45
+GA,Atlanta,Cobb,300,45
+GA,Atlanta,Cobb,301,45
+GA,Atlanta,Gwinnett,300,45
+GA,Atlanta,Clayton,302,45
+GA,Atlanta,Henry,302,45
+GA,Atlanta,Fayette,302,45
+GA,Atlanta,Cherokee,301,45
+GA,Atlanta,Forsyth,300,45
+GA,Atlanta,Douglas,301,45
+GA,Atlanta,Paulding,301,45
+GA,Atlanta,Rockdale,300,45
+GA,Augusta,Richmond,308,45
+GA,Augusta,Richmond,309,45
+GA,Augusta,Columbia,308,45
+GA,Savannah,Chatham,313,45
+GA,Savannah,Chatham,314,45
+GA,Savannah,Bryan,313,45
+GA,Columbus,Muscogee,319,45
+GA,Macon,Bibb,310,45
+GA,Macon,Bibb,312,45
+GA,Macon,Houston,310,45
+AL,Birmingham,Jefferson,350,45
+AL,Birmingham,Jefferson,352,45
+AL,Birmingham,Shelby,350,45
+AL,Birmingham,St. Clair,351,45
+AL,Birmingham,Blount,350,45
+AL,Huntsville,Madison,357,45
+AL,Huntsville,Madison,358,45
+AL,Huntsville,Limestone,356,45
+AL,Huntsville,Morgan,356,45
+AL,Montgomery,Montgomery,360,45
+AL,Montgomery,Montgomery,361,45
+AL,Montgomery,Elmore,360,45
+AL,Montgomery,Autauga,360,45
+AL,Mobile,Mobile,365,45
+AL,Mobile,Mobile,366,45
+AL,Mobile,Baldwin,365,45

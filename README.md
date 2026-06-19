@@ -8,6 +8,7 @@ Internal monthly automation for ROARK ACQUISITIONS LLC. The app downloads Realto
 - Saves raw files in `data/raw/`.
 - Scores counties and ZIP codes with deterministic pandas logic.
 - Excludes ZIPs used in the last `ZIP_COOLDOWN_MONTHS` months unless override is explicitly enabled.
+- Filters counties and ZIPs to configured markets approximately 45 minutes from major cities.
 - Splits eligible ZIPs into List A and List B with no overlap and approximate state-level lead-volume balance.
 - Uses active listing count as lead-volume proxy when population or household data is unavailable.
 - Saves processed rankings and agency exports under `data/processed/`.
@@ -106,6 +107,18 @@ If the eligible ZIP pool is short, the app:
 - does not silently reuse old ZIPs
 
 To reset or edit history, update `data/history/zip_usage_history.csv` carefully. Keep ZIP codes, sent dates, assigned lists, agencies, and report months intact.
+
+## Major-City Market Filter
+
+The file `data/config/major_city_market_filter.csv` controls which counties and ZIP prefixes are treated as being approximately 45 minutes from a major city. The monthly report filters to this list before cooldown and splitting.
+
+Defaults:
+
+- `MAJOR_CITY_FILTER_ENABLED=true`
+- `MAJOR_CITY_DRIVE_MINUTES=45`
+- `TARGET_ZIPS_PER_STATE=200`
+
+`TARGET_ZIPS_PER_STATE` keeps the report volume steady after the filter is applied. If the filtered/cooldown-safe pool is short, the report completes and flags the shortage in Manual Review.
 
 ## GitHub Actions
 

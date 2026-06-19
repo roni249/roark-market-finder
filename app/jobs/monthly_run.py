@@ -33,6 +33,11 @@ from app.scoring.cooldown import (
     save_zip_usage_history,
 )
 from app.scoring.county_score import score_counties
+from app.scoring.market_filter import (
+    filter_counties_near_major_cities,
+    filter_zips_near_major_cities,
+    load_major_city_market_filter,
+)
 from app.scoring.split_lists import split_into_two_balanced_lists, validate_no_duplicate_zips
 from app.scoring.zip_score import score_zips
 
@@ -93,14 +98,18 @@ def _select_top_counties(scored_counties: pd.DataFrame, per_state: int) -> pd.Da
     return scored_counties.groupby("state", group_keys=False).head(per_state).copy()
 
 
-def _select_top_zips(scored_zips: pd.DataFrame, top_counties: pd.DataFrame, per_county: int) -> pd.DataFrame:
+def _select_top_zips(
+    scored_zips: pd.DataFrame,
+    top_counties: pd.DataFrame,
+    per_county: int,
+    target_zips_per_state: int,
+) -> pd.DataFrame:
     county_keys = set(zip(top_counties["state"], top_counties["county"], strict=False))
     selected = scored_zips[
         scored_zips.apply(lambda row: (row["state"], row["county"]) in county_keys, axis=1)
     ].copy()
     if selected.empty:
-        per_state = max(len(top_counties["county"].unique()), 1) * per_county
-        return scored_zips.groupby("state", group_keys=False).head(per_state).copy()
+        return scored_zips.groupby("state", group_keys=False).head(target_zips_per_state).copy()
     return selected.groupby(["state", "county"], group_keys=False).head(per_county).copy()
 
 
@@ -184,7 +193,7 @@ def _manual_review_rows(
                 "Suggested Action": "Do not reuse unless cooldown override is explicitly approved.",
             }
         )
-    expected = len(selected_counties) * settings.top_zips_per_county
+    expected = len(settings.target_states) * settings.target_zips_per_state
     if len(eligible_zips) < expected:
         rows.append(
             {
@@ -206,6 +215,8 @@ def _data_notes(
     county_quality_removed: int,
     zip_quality_removed: int,
     cooldown_excluded_count: int,
+    county_major_city_excluded_count: int,
+    zip_major_city_excluded_count: int,
     list_a: pd.DataFrame,
     list_b: pd.DataFrame,
     balance: pd.DataFrame,
@@ -220,6 +231,11 @@ def _data_notes(
         ("ZIP rows removed by quality flag", zip_quality_removed),
         ("Number of counties analyzed", county_rows),
         ("Number of ZIPs analyzed", zip_rows),
+        ("Major-city drive market filter enabled", settings.major_city_filter_enabled),
+        ("Configured major-city drive minutes", settings.major_city_drive_minutes),
+        ("Counties excluded outside major-city drive markets", county_major_city_excluded_count),
+        ("ZIPs excluded outside major-city drive markets", zip_major_city_excluded_count),
+        ("Target ZIPs per state after major-city filter", settings.target_zips_per_state),
         ("Number of ZIPs excluded due to cooldown", cooldown_excluded_count),
         ("Number of ZIPs assigned to List A", len(list_a)),
         ("Number of ZIPs assigned to List B", len(list_b)),
@@ -307,8 +323,19 @@ def run(report_date: date | None = None) -> dict[str, object]:
     ].copy()
     history = load_zip_usage_history()
     scored_counties = score_counties(county_df)
+    county_major_city_excluded = scored_counties.iloc[0:0].copy()
     top_counties = _select_top_counties(scored_counties, settings.top_counties_per_state)
     scored_zips = score_zips(zip_df)
+    zip_major_city_excluded = scored_zips.iloc[0:0].copy()
+    if settings.major_city_filter_enabled:
+        filters = load_major_city_market_filter(settings.major_city_filter_path)
+        scored_counties, county_major_city_excluded = filter_counties_near_major_cities(
+            scored_counties, filters, settings.major_city_drive_minutes
+        )
+        scored_zips, zip_major_city_excluded = filter_zips_near_major_cities(
+            scored_zips, filters, settings.major_city_drive_minutes
+        )
+        top_counties = _select_top_counties(scored_counties, settings.top_counties_per_state)
     eligible_zips, cooldown_excluded, cooldown_warnings = apply_zip_cooldown_filter(
         scored_zips,
         history,
@@ -316,7 +343,9 @@ def run(report_date: date | None = None) -> dict[str, object]:
         settings.zip_cooldown_months,
         settings.allow_cooldown_override,
     )
-    selected_zips = _select_top_zips(eligible_zips, top_counties, settings.top_zips_per_county)
+    selected_zips = _select_top_zips(
+        eligible_zips, top_counties, settings.top_zips_per_county, settings.target_zips_per_state
+    )
     list_a, list_b, balance = split_into_two_balanced_lists(selected_zips)
     validate_no_duplicate_zips(list_a, list_b)
     manual_review = _manual_review_rows(cooldown_excluded, cooldown_warnings, top_counties, selected_zips, settings)
@@ -332,6 +361,8 @@ def run(report_date: date | None = None) -> dict[str, object]:
         county_quality_removed,
         zip_quality_removed,
         len(cooldown_excluded),
+        len(county_major_city_excluded),
+        len(zip_major_city_excluded),
         list_a,
         list_b,
         balance,
