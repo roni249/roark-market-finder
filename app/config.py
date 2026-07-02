@@ -80,6 +80,8 @@ class Settings:
     major_city_filter_path: Path
     major_city_drive_minutes: int
     target_zips_per_state: int
+    dense_residential_filter_enabled: bool
+    dense_residential_min_lead_volume: int
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -115,6 +117,8 @@ class Settings:
             major_city_filter_path=Path(os.getenv("MAJOR_CITY_FILTER_PATH", str(MAJOR_CITY_FILTER_PATH))),
             major_city_drive_minutes=_int("MAJOR_CITY_DRIVE_MINUTES", 45),
             target_zips_per_state=_int("TARGET_ZIPS_PER_STATE", 200),
+            dense_residential_filter_enabled=_bool(os.getenv("DENSE_RESIDENTIAL_FILTER_ENABLED"), True),
+            dense_residential_min_lead_volume=_int("DENSE_RESIDENTIAL_MIN_LEAD_VOLUME", 25),
         )
 
 

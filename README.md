@@ -9,6 +9,7 @@ Internal monthly automation for ROARK ACQUISITIONS LLC. The app downloads Realto
 - Scores counties and ZIP codes with deterministic pandas logic.
 - Excludes ZIPs used in the last `ZIP_COOLDOWN_MONTHS` months unless override is explicitly enabled.
 - Filters counties and ZIPs to configured markets approximately 45 minutes from major cities.
+- Filters ZIPs to dense residential lead pools, using estimated lead volume as the density proxy.
 - Splits eligible ZIPs into List A and List B with no overlap and approximate state-level lead-volume balance.
 - Uses active listing count as lead-volume proxy when population or household data is unavailable.
 - Saves processed rankings and agency exports under `data/processed/`.
@@ -119,6 +120,17 @@ Defaults:
 - `TARGET_ZIPS_PER_STATE=200`
 
 `TARGET_ZIPS_PER_STATE` keeps the report volume steady after the filter is applied. If the filtered/cooldown-safe pool is short, the report completes and flags the shortage in Manual Review.
+
+## Dense Residential Filter
+
+The MVP does not have ZIP land-area or parcel-density data. Until Census or a lead provider is connected, the app uses estimated lead volume as the residential density proxy. When population or household data is unavailable, estimated lead volume falls back to active listing count.
+
+Defaults:
+
+- `DENSE_RESIDENTIAL_FILTER_ENABLED=true`
+- `DENSE_RESIDENTIAL_MIN_LEAD_VOLUME=25`
+
+The filter keeps ZIPs above the dense-residential threshold first. If a state would fall below `TARGET_ZIPS_PER_STATE`, the report tops up from the next densest available ZIPs in that state and flags the top-up in Manual Review and Data Notes. This preserves report volume while keeping the selected ZIPs as dense as the available data allows.
 
 ## GitHub Actions
 

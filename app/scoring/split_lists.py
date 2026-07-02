@@ -30,12 +30,15 @@ def calculate_state_balance(list_a: pd.DataFrame, list_b: pd.DataFrame) -> pd.Da
 
 def _reason(row: pd.Series) -> str:
     major_city = row.get("major_city", "")
+    dense_note = "dense residential inventory"
+    if row.get("dense_residential_top_up", False):
+        dense_note = "one of the next densest available residential ZIPs needed to preserve report volume"
     if major_city:
         return (
-            f"Within the configured 45-minute drive market for {major_city}; strong pending ratio, "
+            f"Within the configured 45-minute drive market for {major_city}; {dense_note}; strong pending ratio, "
             "healthy active inventory, good price range, and enough estimated lead volume."
         )
-    return "Strong pending ratio, healthy active inventory, good price range, and enough estimated lead volume."
+    return f"{dense_note}; strong pending ratio, healthy active inventory, good price range, and enough estimated lead volume."
 
 
 def split_into_two_balanced_lists(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:

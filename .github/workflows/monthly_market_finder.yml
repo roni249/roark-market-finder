@@ -57,6 +57,8 @@ jobs:
           MAJOR_CITY_FILTER_ENABLED: ${{ secrets.MAJOR_CITY_FILTER_ENABLED }}
           MAJOR_CITY_DRIVE_MINUTES: ${{ secrets.MAJOR_CITY_DRIVE_MINUTES }}
           TARGET_ZIPS_PER_STATE: ${{ secrets.TARGET_ZIPS_PER_STATE }}
+          DENSE_RESIDENTIAL_FILTER_ENABLED: ${{ secrets.DENSE_RESIDENTIAL_FILTER_ENABLED }}
+          DENSE_RESIDENTIAL_MIN_LEAD_VOLUME: ${{ secrets.DENSE_RESIDENTIAL_MIN_LEAD_VOLUME }}
         run: python app/jobs/monthly_run.py
 
       - name: Commit monthly outputs and ZIP history

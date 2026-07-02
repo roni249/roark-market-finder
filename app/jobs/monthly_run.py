@@ -34,6 +34,7 @@ from app.scoring.cooldown import (
 )
 from app.scoring.county_score import score_counties
 from app.scoring.market_filter import (
+    filter_dense_residential_zips,
     filter_counties_near_major_cities,
     filter_zips_near_major_cities,
     load_major_city_market_filter,
@@ -176,6 +177,7 @@ def _format_caller_list(df: pd.DataFrame) -> pd.DataFrame:
 def _manual_review_rows(
     cooldown_excluded: pd.DataFrame,
     warnings: list[str],
+    density_diagnostics: pd.DataFrame,
     selected_counties: pd.DataFrame,
     eligible_zips: pd.DataFrame,
     settings: Settings,
@@ -183,6 +185,20 @@ def _manual_review_rows(
     rows: list[dict[str, str]] = []
     for warning in warnings:
         rows.append({"State": "", "County": "", "ZIP": "", "Reason": warning, "Suggested Action": "Review before outreach."})
+    for _, row in density_diagnostics.iterrows():
+        if int(row.get("Top-Up ZIPs", 0)) > 0:
+            rows.append(
+                {
+                    "State": row.get("State", ""),
+                    "County": "",
+                    "ZIP": "",
+                    "Reason": (
+                        f"{row.get('Top-Up ZIPs')} ZIPs were added from the next densest available pool "
+                        "to preserve report lead volume."
+                    ),
+                    "Suggested Action": "Review top-up ZIPs if strict density is more important than report size.",
+                }
+            )
     for _, row in cooldown_excluded.iterrows():
         rows.append(
             {
@@ -217,6 +233,8 @@ def _data_notes(
     cooldown_excluded_count: int,
     county_major_city_excluded_count: int,
     zip_major_city_excluded_count: int,
+    zip_sparse_residential_excluded_count: int,
+    density_diagnostics: pd.DataFrame,
     list_a: pd.DataFrame,
     list_b: pd.DataFrame,
     balance: pd.DataFrame,
@@ -236,6 +254,9 @@ def _data_notes(
         ("Counties excluded outside major-city drive markets", county_major_city_excluded_count),
         ("ZIPs excluded outside major-city drive markets", zip_major_city_excluded_count),
         ("Target ZIPs per state after major-city filter", settings.target_zips_per_state),
+        ("Dense residential filter enabled", settings.dense_residential_filter_enabled),
+        ("Dense residential minimum lead volume", settings.dense_residential_min_lead_volume),
+        ("ZIPs excluded as sparse residential inventory", zip_sparse_residential_excluded_count),
         ("Number of ZIPs excluded due to cooldown", cooldown_excluded_count),
         ("Number of ZIPs assigned to List A", len(list_a)),
         ("Number of ZIPs assigned to List B", len(list_b)),
@@ -247,6 +268,10 @@ def _data_notes(
     for _, row in balance.iterrows():
         notes.append((f"List A estimated lead volume - {row['State']}", row["List A Volume"]))
         notes.append((f"List B estimated lead volume - {row['State']}", row["List B Volume"]))
+    for _, row in density_diagnostics.iterrows():
+        notes.append((f"Dense residential ZIPs - {row['State']}", row["Dense ZIPs"]))
+        notes.append((f"Dense residential top-up ZIPs - {row['State']}", row["Top-Up ZIPs"]))
+        notes.append((f"Sparse residential ZIPs excluded - {row['State']}", row["Excluded Sparse ZIPs"]))
     return pd.DataFrame(notes, columns=["Item", "Value"])
 
 
@@ -327,6 +352,8 @@ def run(report_date: date | None = None) -> dict[str, object]:
     top_counties = _select_top_counties(scored_counties, settings.top_counties_per_state)
     scored_zips = score_zips(zip_df)
     zip_major_city_excluded = scored_zips.iloc[0:0].copy()
+    zip_sparse_residential_excluded = scored_zips.iloc[0:0].copy()
+    density_diagnostics = pd.DataFrame(columns=["State", "Dense ZIPs", "Top-Up ZIPs", "Excluded Sparse ZIPs"])
     if settings.major_city_filter_enabled:
         filters = load_major_city_market_filter(settings.major_city_filter_path)
         scored_counties, county_major_city_excluded = filter_counties_near_major_cities(
@@ -336,6 +363,12 @@ def run(report_date: date | None = None) -> dict[str, object]:
             scored_zips, filters, settings.major_city_drive_minutes
         )
         top_counties = _select_top_counties(scored_counties, settings.top_counties_per_state)
+    if settings.dense_residential_filter_enabled:
+        scored_zips, zip_sparse_residential_excluded, density_diagnostics = filter_dense_residential_zips(
+            scored_zips,
+            settings.dense_residential_min_lead_volume,
+            settings.target_zips_per_state,
+        )
     eligible_zips, cooldown_excluded, cooldown_warnings = apply_zip_cooldown_filter(
         scored_zips,
         history,
@@ -348,7 +381,9 @@ def run(report_date: date | None = None) -> dict[str, object]:
     )
     list_a, list_b, balance = split_into_two_balanced_lists(selected_zips)
     validate_no_duplicate_zips(list_a, list_b)
-    manual_review = _manual_review_rows(cooldown_excluded, cooldown_warnings, top_counties, selected_zips, settings)
+    manual_review = _manual_review_rows(
+        cooldown_excluded, cooldown_warnings, density_diagnostics, top_counties, selected_zips, settings
+    )
     county_rankings = _format_county_rankings(scored_counties)
     zip_rankings = _format_zip_rankings(scored_zips)
     caller_a = _format_caller_list(list_a)
@@ -363,6 +398,8 @@ def run(report_date: date | None = None) -> dict[str, object]:
         len(cooldown_excluded),
         len(county_major_city_excluded),
         len(zip_major_city_excluded),
+        len(zip_sparse_residential_excluded),
+        density_diagnostics,
         list_a,
         list_b,
         balance,
