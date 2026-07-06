@@ -26,6 +26,7 @@ def main() -> int:
         print("Missing required live-run settings:")
         for name in missing:
             print(f"- {name}")
+            print(f"::error title=Missing GitHub Action secret::{name} is required for the monthly market finder.")
         return 1
     print("Preflight passed.")
     return 0
