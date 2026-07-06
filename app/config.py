@@ -13,6 +13,12 @@ EXPORTS_DIR = PROCESSED_DIR / "exports"
 HISTORY_DIR = DATA_DIR / "history"
 ZIP_HISTORY_PATH = HISTORY_DIR / "zip_usage_history.csv"
 MAJOR_CITY_FILTER_PATH = DATA_DIR / "config" / "major_city_market_filter.csv"
+DEFAULT_REALTOR_COUNTY_CSV_URL = (
+    "https://econdata.s3-us-west-2.amazonaws.com/Reports/Core/RDC_Inventory_Core_Metrics_County_History.csv"
+)
+DEFAULT_REALTOR_ZIP_CSV_URL = (
+    "https://econdata.s3-us-west-2.amazonaws.com/Reports/Core/RDC_Inventory_Core_Metrics_Zip_History.csv"
+)
 
 
 def load_local_env() -> None:
@@ -43,8 +49,15 @@ def _int(name: str, default: int) -> int:
     return int(value)
 
 
+def _str(name: str, default: str | None = None) -> str | None:
+    value = os.getenv(name)
+    if value is None or value == "":
+        return default
+    return value
+
+
 def _states() -> list[str]:
-    raw = os.getenv("TARGET_STATES", "FL,MI,GA,AL")
+    raw = _str("TARGET_STATES", "FL,MI,GA,AL") or "FL,MI,GA,AL"
     return [state.strip().upper() for state in raw.split(",") if state.strip()]
 
 
@@ -87,26 +100,26 @@ class Settings:
     def from_env(cls) -> "Settings":
         load_local_env()
         return cls(
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            google_service_account_json=os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON"),
-            google_sheet_id=os.getenv("GOOGLE_SHEET_ID"),
-            realtor_county_csv_url=os.getenv("REALTOR_COUNTY_CSV_URL"),
-            realtor_zip_csv_url=os.getenv("REALTOR_ZIP_CSV_URL"),
-            census_api_key=os.getenv("CENSUS_API_KEY"),
-            fred_api_key=os.getenv("FRED_API_KEY"),
+            openai_api_key=_str("OPENAI_API_KEY"),
+            google_service_account_json=_str("GOOGLE_SERVICE_ACCOUNT_JSON"),
+            google_sheet_id=_str("GOOGLE_SHEET_ID"),
+            realtor_county_csv_url=_str("REALTOR_COUNTY_CSV_URL", DEFAULT_REALTOR_COUNTY_CSV_URL),
+            realtor_zip_csv_url=_str("REALTOR_ZIP_CSV_URL", DEFAULT_REALTOR_ZIP_CSV_URL),
+            census_api_key=_str("CENSUS_API_KEY"),
+            fred_api_key=_str("FRED_API_KEY"),
             target_states=_states(),
             run_day=_int("RUN_DAY", 5),
-            email_provider=os.getenv("EMAIL_PROVIDER", "smtp"),
-            smtp_host=os.getenv("SMTP_HOST"),
+            email_provider=_str("EMAIL_PROVIDER", "smtp") or "smtp",
+            smtp_host=_str("SMTP_HOST"),
             smtp_port=_int("SMTP_PORT", 587),
-            smtp_username=os.getenv("SMTP_USERNAME"),
-            smtp_password=os.getenv("SMTP_PASSWORD"),
-            from_email=os.getenv("FROM_EMAIL"),
-            owner_email=os.getenv("OWNER_EMAIL"),
-            cold_caller_a_email=os.getenv("COLD_CALLER_A_EMAIL"),
-            cold_caller_b_email=os.getenv("COLD_CALLER_B_EMAIL"),
-            cold_caller_a_name=os.getenv("COLD_CALLER_A_NAME", "Cold Caller A"),
-            cold_caller_b_name=os.getenv("COLD_CALLER_B_NAME", "Cold Caller B"),
+            smtp_username=_str("SMTP_USERNAME"),
+            smtp_password=_str("SMTP_PASSWORD"),
+            from_email=_str("FROM_EMAIL"),
+            owner_email=_str("OWNER_EMAIL"),
+            cold_caller_a_email=_str("COLD_CALLER_A_EMAIL"),
+            cold_caller_b_email=_str("COLD_CALLER_B_EMAIL"),
+            cold_caller_a_name=_str("COLD_CALLER_A_NAME", "Cold Caller A") or "Cold Caller A",
+            cold_caller_b_name=_str("COLD_CALLER_B_NAME", "Cold Caller B") or "Cold Caller B",
             zip_cooldown_months=_int("ZIP_COOLDOWN_MONTHS", 18),
             allow_cooldown_override=_bool(os.getenv("ALLOW_COOLDOWN_OVERRIDE"), False),
             top_counties_per_state=_int("TOP_COUNTIES_PER_STATE", 5),
@@ -114,7 +127,7 @@ class Settings:
             min_active_listing_count=_int("MIN_ACTIVE_LISTING_COUNT", 10),
             min_pending_listing_count=_int("MIN_PENDING_LISTING_COUNT", 3),
             major_city_filter_enabled=_bool(os.getenv("MAJOR_CITY_FILTER_ENABLED"), True),
-            major_city_filter_path=Path(os.getenv("MAJOR_CITY_FILTER_PATH", str(MAJOR_CITY_FILTER_PATH))),
+            major_city_filter_path=Path(_str("MAJOR_CITY_FILTER_PATH", str(MAJOR_CITY_FILTER_PATH)) or MAJOR_CITY_FILTER_PATH),
             major_city_drive_minutes=_int("MAJOR_CITY_DRIVE_MINUTES", 45),
             target_zips_per_state=_int("TARGET_ZIPS_PER_STATE", 200),
             dense_residential_filter_enabled=_bool(os.getenv("DENSE_RESIDENTIAL_FILTER_ENABLED"), True),

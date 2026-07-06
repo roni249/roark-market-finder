@@ -32,11 +32,11 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-          REALTOR_COUNTY_CSV_URL: ${{ secrets.REALTOR_COUNTY_CSV_URL }}
-          REALTOR_ZIP_CSV_URL: ${{ secrets.REALTOR_ZIP_CSV_URL }}
+          REALTOR_COUNTY_CSV_URL: https://econdata.s3-us-west-2.amazonaws.com/Reports/Core/RDC_Inventory_Core_Metrics_County_History.csv
+          REALTOR_ZIP_CSV_URL: https://econdata.s3-us-west-2.amazonaws.com/Reports/Core/RDC_Inventory_Core_Metrics_Zip_History.csv
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-          TARGET_STATES: ${{ secrets.TARGET_STATES }}
+          TARGET_STATES: FL,MI,GA,AL
           EMAIL_PROVIDER: smtp
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
@@ -48,17 +48,17 @@ jobs:
           COLD_CALLER_B_EMAIL: ${{ secrets.COLD_CALLER_B_EMAIL }}
           COLD_CALLER_A_NAME: ${{ secrets.COLD_CALLER_A_NAME }}
           COLD_CALLER_B_NAME: ${{ secrets.COLD_CALLER_B_NAME }}
-          ZIP_COOLDOWN_MONTHS: ${{ secrets.ZIP_COOLDOWN_MONTHS }}
-          ALLOW_COOLDOWN_OVERRIDE: ${{ secrets.ALLOW_COOLDOWN_OVERRIDE }}
-          TOP_COUNTIES_PER_STATE: ${{ secrets.TOP_COUNTIES_PER_STATE }}
-          TOP_ZIPS_PER_COUNTY: ${{ secrets.TOP_ZIPS_PER_COUNTY }}
-          MIN_ACTIVE_LISTING_COUNT: ${{ secrets.MIN_ACTIVE_LISTING_COUNT }}
-          MIN_PENDING_LISTING_COUNT: ${{ secrets.MIN_PENDING_LISTING_COUNT }}
-          MAJOR_CITY_FILTER_ENABLED: ${{ secrets.MAJOR_CITY_FILTER_ENABLED }}
-          MAJOR_CITY_DRIVE_MINUTES: ${{ secrets.MAJOR_CITY_DRIVE_MINUTES }}
-          TARGET_ZIPS_PER_STATE: ${{ secrets.TARGET_ZIPS_PER_STATE }}
-          DENSE_RESIDENTIAL_FILTER_ENABLED: ${{ secrets.DENSE_RESIDENTIAL_FILTER_ENABLED }}
-          DENSE_RESIDENTIAL_MIN_LEAD_VOLUME: ${{ secrets.DENSE_RESIDENTIAL_MIN_LEAD_VOLUME }}
+          ZIP_COOLDOWN_MONTHS: 18
+          ALLOW_COOLDOWN_OVERRIDE: "false"
+          TOP_COUNTIES_PER_STATE: 5
+          TOP_ZIPS_PER_COUNTY: 10
+          MIN_ACTIVE_LISTING_COUNT: 10
+          MIN_PENDING_LISTING_COUNT: 3
+          MAJOR_CITY_FILTER_ENABLED: "true"
+          MAJOR_CITY_DRIVE_MINUTES: 45
+          TARGET_ZIPS_PER_STATE: 200
+          DENSE_RESIDENTIAL_FILTER_ENABLED: "true"
+          DENSE_RESIDENTIAL_MIN_LEAD_VOLUME: 25
         run: python app/jobs/monthly_run.py
 
       - name: Commit monthly outputs and ZIP history

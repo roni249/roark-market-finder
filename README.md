@@ -138,13 +138,11 @@ The workflow at `.github/workflows/monthly_market_finder.yml` runs at 10:00 UTC 
 
 After each successful run, the workflow commits `data/history/zip_usage_history.csv` and `data/processed/` back to the repository. This is what makes the 18-month ZIP cooldown work automatically across future monthly runs.
 
-Add these GitHub secrets before enabling the workflow:
+Add these private GitHub secrets before enabling the workflow:
 
 - `OPENAI_API_KEY`
 - `GOOGLE_SERVICE_ACCOUNT_JSON`
 - `GOOGLE_SHEET_ID`
-- `REALTOR_COUNTY_CSV_URL`
-- `REALTOR_ZIP_CSV_URL`
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_USERNAME`
@@ -155,13 +153,8 @@ Add these GitHub secrets before enabling the workflow:
 - `COLD_CALLER_B_EMAIL`
 - `COLD_CALLER_A_NAME`
 - `COLD_CALLER_B_NAME`
-- `TARGET_STATES`
-- `ZIP_COOLDOWN_MONTHS`
-- `ALLOW_COOLDOWN_OVERRIDE`
-- `TOP_COUNTIES_PER_STATE`
-- `TOP_ZIPS_PER_COUNTY`
-- `MIN_ACTIVE_LISTING_COUNT`
-- `MIN_PENDING_LISTING_COUNT`
+
+The workflow now includes safe defaults for public/non-secret settings such as Realtor CSV URLs, target states, cooldown months, ZIP count targets, major-city filtering, and dense residential filtering. Override them only if the business rules change.
 
 ## Tests
 
